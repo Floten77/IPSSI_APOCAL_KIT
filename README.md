@@ -22,7 +22,7 @@ de LLM open source.
 | Backend | Django + DRF | Python 3.11+ |
 | Frontend | React + Vite + TypeScript | React 18 |
 | Base de données | PostgreSQL | 16 (Docker) |
-| LLM | Ollama + Llama 3.1 8B | Changement libre après ADR |
+| LLM | Ollama (local, défaut) · OpenAI · Claude · mock | Choix via `LLM_BACKEND` |
 | Parsing PDF | `pypdf` | — |
 | Conteneurisation | Docker + Compose | — |
 | API docs | drf-spectacular | Swagger UI auto |
@@ -85,6 +85,36 @@ make ci            # lint + test (cible CI)
 make seed          # Insère données de test
 make reset-db      # ⚠️ Supprime + recrée la DB
 ```
+
+---
+
+## 🔄 Redéployer après une modification
+
+Après avoir modifié du code ou le `.env`, régénérez les conteneurs avec le
+script adapté à votre système. Il reconstruit les images, **recrée les
+conteneurs** (prise en compte du code *et* du `.env`) et relance Docker.
+Le script se replace tout seul à la racine du projet — lançable de n'importe où.
+
+| Système | Commande |
+|---|---|
+| **Linux / macOS** | `bash scripts/redeploy.sh` |
+| **Windows (PowerShell)** | `powershell -ExecutionPolicy Bypass -File scripts\redeploy.ps1` |
+
+Option **rapide** (`--fast` / `-Fast`) — recrée sans reconstruire les images :
+
+| Système | Commande |
+|---|---|
+| Linux / macOS | `bash scripts/redeploy.sh --fast` |
+| Windows | `powershell -ExecutionPolicy Bypass -File scripts\redeploy.ps1 -Fast` |
+
+> 💡 **Quand utiliser quoi ?**
+> - **Modif de code** (Python/JS) → `--fast` suffit (code monté en volume, rechargé à chaud).
+> - **Modif du `.env`** (ex. `LLM_BACKEND`, clés API) → `--fast` suffit (recrée les conteneurs).
+> - **Modif des dépendances** (`requirements.txt`, `package.json`) ou d'un `Dockerfile` → version **complète** (avec rebuild).
+>
+> Sous Windows, si PowerShell bloque l'exécution, le préfixe
+> `-ExecutionPolicy Bypass` (déjà dans la commande) lève la restriction
+> pour cette seule exécution.
 
 ---
 
